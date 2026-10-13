@@ -7,7 +7,7 @@ const asyncHandler = require('../middleware/asyncHandler');
 const { authenticate, getJwtSecret } = require('../middleware/auth.middleware');
 
 const router = express.Router();
-// Limita intentos tanto de registro como de inicio de sesión.
+// Limita intentos tanto de registro como de inicio de sesión
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: 20,

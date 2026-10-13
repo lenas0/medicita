@@ -5,7 +5,7 @@ const asyncHandler = require('../middleware/asyncHandler');
 const { authenticate, requireRole } = require('../middleware/auth.middleware');
 
 const router = express.Router();
-// Todas las rutas de citas exigen identidad; cada operación limita además el rol.
+// Todas las rutas de citas exigen identidad; cada operación limita además el rol
 router.use(authenticate);
 
 router.get('/me', requireRole('2'), asyncHandler(async (request, response) => {
