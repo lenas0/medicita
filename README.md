@@ -5,7 +5,7 @@ REST API built with Node.js, Express, and MySQL. The code follows the project la
 ## Requirements
 
 - Node.js 18 or newer
-- MySQL 8.0.16 or newer (the schema uses enforced `CHECK` constraints)
+- MySQL 8.0.16 or newer (the schema uses enforced `CHECK` constraints).
 
 ## Setup
 
