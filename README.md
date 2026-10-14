@@ -1,30 +1,116 @@
-# MediCita Backend
+﻿# MediCita Backend
 
-REST API built with Node.js, Express, and MySQL. The code follows the project layers: `routes/` handles HTTP requests, `dao/` contains SQL access, `services/mysql.service.js` provides the shared connection pool, and `env/mysqlConfig.js` reads database configuration.
+MediCita is a REST API for a medical appointment management system built with Node.js, Express, and MySQL. It supports patient registration, authentication, doctor management, appointment booking, reviews, exams, and admin reporting.
+
+## Features
+
+- User registration and login with JWT authentication
+- Role-based access control for patients and administrators
+- Doctor catalog and schedule management
+- Appointment creation, cancellation, and status updates
+- Patient review submission for completed appointments
+- Exam management associated with appointments
+- Admin reporting for patients and income
+- OpenAPI-compatible documentation at `/api-docs`
+
+## Project structure
+
+- `routes/` — HTTP route definitions
+- `dao/` — data access layer and SQL queries
+- `services/` — service logic and shared infrastructure
+- `env/` — environment configuration loader
+- `scripts/` — helper scripts such as admin bootstrap
+- `server.js` — application entry point
+- `medicitas.sql` — database schema and seed definitions
 
 ## Requirements
 
 - Node.js 18 or newer
-- MySQL 8.0.16 or newer (the schema uses enforced `CHECK` constraints).
+- MySQL 8.0.16 or newer
+- npm
+
+## Environment configuration
+
+Create a local `.env` file in the project root. This file must not be committed to source control because it contains environment-specific values and secrets.
+
+The repository includes `.env.example` as the base template. It is intentionally kept in version control so other developers can copy it and configure their own local settings without exposing real credentials.
+
+Example:
+
+```env
+PORT=5000
+NODE_ENV=development
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=root
+DB_PASSWORD=root
+DB_NAME=medicita
+JWT_SECRET=replace_with_a_random_secret_at_least_32_characters
+JWT_EXPIRES_IN=8h
+```
+
+For the initial administrator bootstrap, temporarily add the following values to `.env` before running the creation script:
+
+```env
+ADMIN_FIRST_NAMES=admin
+ADMIN_LAST_NAMES=admin
+ADMIN_EMAIL=admin@example.com
+ADMIN_PASSWORD=StrongPassword123!
+```
+
+After the first administrator account is created, remove `ADMIN_PASSWORD` from `.env` and keep the remaining runtime configuration only.
 
 ## Setup
 
-1. Create the database and tables by running `medicitas.sql` in MySQL.
-2. Copy `.env.example` to `.env` and set the database credentials and a random `JWT_SECRET` of at least 32 characters.
-3. Install dependencies with `npm install`.
-4. Start the API with `npm start`. The default port is `5000`.
+1. Create the database schema by importing `medicitas.sql` into MySQL.
+2. Create `.env` from `.env.example` and set your local values.
+3. Install dependencies:
 
-The API does not serve frontend application files. Interactive API documentation is available at `/api-docs`. `GET /api/health` checks the database connection.
+```bash
+npm install
+```
 
-## Initial admin account
+4. Start the API:
 
-Public registration always creates a patient (`user_role = '2'`). To create the first administrator, temporarily add `ADMIN_FIRST_NAMES`, `ADMIN_LAST_NAMES`, `ADMIN_EMAIL`, and `ADMIN_PASSWORD` to `.env`. Use a password with at least 12 characters, then run `npm run create-admin`. Remove `ADMIN_PASSWORD` from `.env` after the account is created. Admin accounts are never created through the public API.
+```bash
+npm start
+```
 
-Roles are `1 = admin` and `2 = patient`.
+The default port is `5000`.
+
+## Initial administrator
+
+Public registration always creates a patient account (`user_role = '2'`). To create the first administrator, add the `ADMIN_*` variables to `.env`, then run:
+
+```bash
+npm run create-admin
+```
+
+This script creates the initial admin account in the database. The generated admin user is not created through the public API and should be treated as a one-time bootstrap step.
+
+Roles:
+- `1 = admin`
+- `2 = patient`
 
 ## API documentation
 
-Open `/api-docs` while the API is running to browse the OpenAPI documentation and try requests interactively. Protected operations use a Bearer token returned by registration or login.
+Once the server is running, open the Swagger/OpenAPI documentation in the browser:
+
+```text
+http://localhost:5000/api-docs
+```
+
+The API exposes interactive documentation for testing endpoints. Protected requests require a JWT returned by registration or login.
+
+## Authentication
+
+After registering or logging in, send the returned token as:
+
+```http
+Authorization: Bearer <token>
+```
+
+Request fields for public authentication endpoints use English camelCase. DAO-backed response records expose database fields in English snake_case.
 
 ## API endpoints
 
@@ -51,11 +137,9 @@ Open `/api-docs` while the API is running to browse the OpenAPI documentation an
 | `GET` | `/api/admin/patients` | Admin |
 | `GET` | `/api/admin/reports/income?from=YYYY-MM-DD&to=YYYY-MM-DD` | Admin |
 
-Send the JWT returned by registration or login as `Authorization: Bearer <token>` for protected endpoints. Request fields and public authentication users use English camelCase. DAO-backed response records expose the selected database columns in English snake_case.
-
 ## Request examples
 
-Register a patient:
+### Register a patient
 
 ```json
 {
@@ -67,7 +151,7 @@ Register a patient:
 }
 ```
 
-Book an appointment (database-local time):
+### Book an appointment
 
 ```json
 {
@@ -77,10 +161,24 @@ Book an appointment (database-local time):
 }
 ```
 
+## Health check
+
+```bash
+curl http://localhost:5000/api/health
+```
+
+This endpoint verifies the database connection status.
+
 ## Known schema constraints
 
-- A doctor can have one schedule interval per weekday, Monday through Friday.
-- Appointment uniqueness prevents duplicate start times, but appointment duration and overlapping intervals are not modeled.
+- A doctor can have one schedule interval per weekday from Monday to Friday.
+- Appointment uniqueness prevents duplicate start times, but overlapping intervals and duration logic are not fully modeled.
 - Exam reference ranges, review tags, and waiting time are not represented in the current schema.
-- Income reports total completed appointments by their recorded `appointment_fee`; separate payment transactions are not modeled."# medicita" 
-"# medicita" 
+- Income reports total completed appointments by their recorded `appointment_fee`; separate payment transactions are not modeled.
+
+## Notes
+
+- Keep `.env` local and never commit it to the repository.
+- The project intentionally provides `.env.example` as a portable, secure template.
+- Use strong credentials and rotate secrets in production environments.
+
