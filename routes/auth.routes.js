@@ -7,7 +7,7 @@ const asyncHandler = require('../middleware/asyncHandler');
 const { authenticate, getJwtSecret } = require('../middleware/auth.middleware');
 
 const router = express.Router();
-// Limita intentos tanto de registro como de inicio de sesión
+
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: 20,
@@ -16,7 +16,7 @@ const authLimiter = rateLimit({
 });
 
 function createToken(user) {
-  // El token conserva el identificador y rol hasta que expire.
+  
   return jwt.sign(
     { sub: String(user.user_id), role: user.user_role },
     getJwtSecret(),
@@ -25,7 +25,7 @@ function createToken(user) {
 }
 
 function publicUser(user) {
-  // Nunca incluir el hash de contraseña en la respuesta pública.
+  
   return {
     userId: user.user_id,
     firstNames: user.user_first_names,
