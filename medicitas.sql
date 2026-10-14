@@ -2,11 +2,7 @@ CREATE DATABASE IF NOT EXISTS medicita
   CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE medicita;
 
--- ============================================================
--- USERS (login): admin and patient in a single table
--- user_password_hash NEVER stores the real password: the backend
--- stores the result of bcrypt or argon2 (with salt included).
--- ============================================================
+
 CREATE TABLE users (
   user_id             INT AUTO_INCREMENT PRIMARY KEY,
   user_first_names    VARCHAR(80)  NOT NULL,
@@ -17,9 +13,7 @@ CREATE TABLE users (
   user_phone          VARCHAR(20)
 );
 
--- ============================================================
--- DOCTORS (specialty is an attribute, without a separate table)
--- ============================================================
+
 CREATE TABLE doctors (
   doctor_id               INT AUTO_INCREMENT PRIMARY KEY,
   doctor_first_names      VARCHAR(80)  NOT NULL,
@@ -30,7 +24,7 @@ CREATE TABLE doctors (
   doctor_active           BOOLEAN NOT NULL DEFAULT TRUE
 );
 
--- Fixed weekly schedule, from Monday (1) to Friday (5)
+
 CREATE TABLE doctor_schedules (
   schedule_id           INT AUTO_INCREMENT PRIMARY KEY,
   doctor_id             INT NOT NULL,
@@ -42,11 +36,7 @@ CREATE TABLE doctor_schedules (
   FOREIGN KEY (doctor_id) REFERENCES doctors(doctor_id)
 );
 
--- ============================================================
--- APPOINTMENTS
--- appointment_fee stores the price charged AT THAT MOMENT (income reports).
--- user_id is the patient who schedules (user with 'patient' role).
--- ============================================================
+
 CREATE TABLE appointments (
   appointment_id       INT AUTO_INCREMENT PRIMARY KEY,
   user_id              INT NOT NULL,
@@ -60,10 +50,7 @@ CREATE TABLE appointments (
   UNIQUE (doctor_id, appointment_datetime)
 );
 
--- ============================================================
--- REVIEWS: one per appointment, cannot be modified. Only if the appointment is 'completed'
--- (rule validated by the backend).
--- ============================================================
+
 CREATE TABLE reviews (
   review_id         INT AUTO_INCREMENT PRIMARY KEY,
   appointment_id    INT NOT NULL UNIQUE,
@@ -73,13 +60,11 @@ CREATE TABLE reviews (
   FOREIGN KEY (appointment_id) REFERENCES appointments(appointment_id)
 );
 
--- ============================================================
--- EXAMS: a single table for the 3 types of results.
--- ============================================================
+
 CREATE TABLE exams (
   exam_id                    INT AUTO_INCREMENT PRIMARY KEY,
   appointment_id             INT NOT NULL,
-  exam_name                  VARCHAR(100) NOT NULL,       -- e.g., Glycemia, Pregnancy test, Chest X-ray
+  exam_name                  VARCHAR(100) NOT NULL,     
   exam_type                  ENUM('numeric','qualitative','image') NOT NULL,
   exam_date                  DATE NOT NULL,
   exam_value                 DECIMAL(12,4) NULL,
